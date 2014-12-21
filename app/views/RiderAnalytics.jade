@@ -1,0 +1,112 @@
+extends template/layout
+
+block content 
+
+  script(src='/js/angular.js')
+  script(src='http://maps.google.com/maps/api/js?sensor=false', type='text/javascript')
+  script(type='text/javascript')
+      var riderApp = angular.module('riderApp', []);
+
+      riderApp.controller('RiderCtrl', function ($scope, $http) {
+        $scope.test = [
+          {'name': 'Nexus S',
+           'snippet': 'Fast just got faster with Nexus S.'},
+          {'name': 'Motorola XOOM™ with Wi-Fi',
+           'snippet': 'The Next, Next Generation tablet.'},
+          {'name': 'MOTOROLA XOOM™',
+           'snippet': 'The Next, Next Generation tablet.'}
+        ];
+        $http.get('/api/ridership/ridership/mapRoute126').success(function(data){
+          $scope.data = $.parseJSON(data.data);
+          var locations = [];
+
+          var i = 0;
+          var res;
+          for(i = 0; i < $scope.data.length; i++){
+
+            res = ($scope.data[i].location).split(",");
+            locations.push([''+$scope.data[i].on_street+', ' + $scope.data[i].cross_street+'', Number(res[0].substring(1)), Number(res[1].substring(0, res[1].length-1)), i]);
+            //$scope.data[i]
+          }
+
+          //$scope.data = locations;
+          //- var locations = [
+          //-   ['Bondi Beach', -33.890542, 151.274856, 4],
+          //-   ['Coogee Beach', -33.923036, 151.259052, 5],
+          //-   ['Cronulla Beach', -34.028249, 151.157507, 3],
+          //-   ['Manly Beach', -33.80010128657071, 151.28747820854187, 2],
+          //-   ['Maroubra Beach', -33.950198, 151.259302, 1]
+          //- ];
+
+          var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: new google.maps.LatLng(41.8763, -87.7741),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          });
+
+          var infowindow = new google.maps.InfoWindow();
+
+          var marker, i;
+
+          var circle ={
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: 'red',
+              fillOpacity: .4,
+              scale: 4.5,
+              strokeColor: 'white',
+              strokeWeight: 1
+          };
+          for (i = 0; i < locations.length; i++) {  
+            marker = new google.maps.Marker({
+              position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+              map: map,
+              icon: circle
+            });
+
+            google.maps.event.addListener(marker, 'click', (function(marker, i) {
+              return function() {
+                infowindow.setContent(locations[i][0]);
+                infowindow.open(map, marker);
+              }
+            })(marker, i));
+          }
+
+
+
+
+          })
+      });
+
+      //- function UserGeos($scope, $http){
+      //-   var pathArray = window.location.pathname.split('/')
+      //-   $http.get('/user/' + pathArray[2] + '/' + pathArray[3] + '/JSON').success(function(data){
+      //-     $scope.geos = $.parseJSON(data.data);
+      //-   })
+      //- }
+
+
+  .container(style='padding-top: 20px', ng-app='riderApp')
+    .row
+      div.col-md-12
+        table.table.table-hover
+          thead 
+            - each key in keys
+              th #{key}
+            th 
+          tbody 
+            - each row, i in rows
+              tr
+                form(method="POST", action="/database/#{databaseName}/#{tableName}/#{row[key[0]}")
+                  - each key in keys
+                    td 
+                      p.form-control-static #{row[key]}
+    .row(ng-controller='RiderCtrl')
+      //span {{data}}
+      #map(style='width: 1100px; height: 500px;')
+
+  //-     span {{data}}
+  //-     ul
+  //-       li(ng-repeat='phone in test')
+  //-         span {{phone.name}}
+  //- script(type='text/javascript')
+

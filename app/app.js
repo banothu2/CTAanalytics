@@ -51,6 +51,10 @@ var verbose = process.env.NODE_ENV != 'test'
 /* public variables end */
 
 /* map functions start */
+var DBuser = 'root';
+var DBhost = '127.0.0.1';
+var DBpassword = '';
+
   var init = {
     requestConnection: function(req, res){
         res.render('connection');
@@ -59,9 +63,9 @@ var verbose = process.env.NODE_ENV != 'test'
       var apple = 0;
 
       connection = mysql.createConnection({ 
-          user: req.body.username, 
-          host: req.body.hostname, 
-          password: req.body.password
+          user: DBuser,//req.body.username, 
+          host: DBhost, //req.body.hostname, 
+          password: DBpassword//req.body.password
       });
       connection.connect(function(err) {
         // connected! (unless `err` is set)
@@ -70,7 +74,8 @@ var verbose = process.env.NODE_ENV != 'test'
         } else {
           connection.query('SHOW Databases', function(err, databaseList){
             connection.query('SELECT * FROM '+ databaseList[0].Database + '.TABLES',  function(err, tables){
-              res.redirect('/connected/' + databaseList[0].Database + '/' + tables[0].TABLE_NAME );
+              res.redirect('/connected_rider/ridership/ridership');
+              //res.redirect('/connected/' + databaseList[0].Database + '/' + tables[0].TABLE_NAME );
             });
           });
         }
@@ -96,7 +101,7 @@ var verbose = process.env.NODE_ENV != 'test'
                       return tablesList;
                   }
 
-            connection.query('SELECT * FROM '+ toTable, function(err, rows){
+            connection.query('SELECT * FROM '+ toTable + '', function(err, rows){
 
                   var keys = Object_keys(rows[0]);
                   function Object_keys(obj) {
@@ -126,6 +131,94 @@ var verbose = process.env.NODE_ENV != 'test'
           });
 
       });
+    }, 
+    connected_rider: function(req, res){
+      var toDatabase = req.params.toDatabase;
+      var toTable = req.params.toTable;
+
+      //connection.query('SHOW Databases', function(err, databaseList){
+
+          connection.query('USE ' + toDatabase);
+          // connection.query('SELECT * FROM information_schema.TABLES',  function(err, tables){
+
+          //         var tablesList = Object_keys(tables[0]);
+          //         function Object_keys(obj) {
+          //             var tablesList = [], name;
+          //             for (name in obj) {
+          //                 if (obj.hasOwnProperty(name)) {
+          //                     tablesList.push(name);
+          //                 }
+          //             }
+          //             return tablesList;
+          //         }
+
+            connection.query('SELECT * FROM '+ toTable + ' LIMIT 5', function(err, rows){
+
+                  var keys = Object_keys(rows[0]);
+                  function Object_keys(obj) {
+                      var keys = [], name;
+                      for (name in obj) {
+                          if (obj.hasOwnProperty(name)) {
+                              keys.push(name);
+                          }
+                      }
+                      return keys;
+                  }
+
+                res.render('RiderAnalytics', {
+                                      rows : rows,
+                                      keys: keys, 
+                                      //databases: databaseList, 
+                                      //tables: tables,
+                                      databaseName: toDatabase,
+                                      tableName: toTable
+
+                                    }
+                );
+
+            })
+
+
+          //});
+
+      //});
+    },
+    connected_api: function(req, res){
+      var toDatabase = req.params.toDatabase;
+      var toTable = req.params.toTable;
+      var queryRequested = req.params.query;
+      console.log(queryRequested);
+      connection.query('USE ' + toDatabase);
+
+      //if(queryRequested == 'mapRoute126'){
+          connection.query('SELECT on_street, cross_street, location, routes FROM '+ toTable + ' WHERE routes = 126 ORDER BY stop_id', function(err, rows){
+                res.contentType('json');
+                res.send({
+                    data: JSON.stringify(rows)
+                })
+
+            })
+
+      // } else {
+      //     connection.query('SELECT * FROM '+ toTable + ' LIMIT 5', function(err, rows){
+      //             var keys = Object_keys(rows[0]);
+      //             function Object_keys(obj) {
+      //                 var keys = [], name;
+      //                 for (name in obj) {
+      //                     if (obj.hasOwnProperty(name)) {
+      //                         keys.push(name);
+      //                     }
+      //                 }
+      //                 return keys;
+      //             }
+
+      //           res.contentType('json');
+      //           res.send({
+      //               data: JSON.stringify(rows)
+      //           })
+
+      //       })
+      // }
     }
   }
 
@@ -194,11 +287,19 @@ handleDisconnect();
 /* map path start */
   app.map({
     '/': {
-      get: init.requestConnection
+      get: init.createConnection
+      //get: init.requestConnection
     }, 
+    '/api/:toDatabase/:toTable/:query':{
+      get: init.connected_api
+    },
     '/connected/:toDatabase/:toTable': {
       get: init.connected,
       post: init.connected
+    }, 
+    '/connected_rider/:toDatabase/:toTable': {
+      get: init.connected_rider,
+      post: init.connected_rider
     }, 
     '/request/createConnection': {
       post: init.createConnection

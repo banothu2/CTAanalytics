@@ -38,6 +38,7 @@ block content
                 form(method="POST", action="/database/#{databaseName}/#{tableName}/#{row[key[0]}")
                   - each key in keys
                     td 
-                      input.form-control(type='text', value='#{row[key]}', name='key')
-                  td 
-                    button.btn.btn-default(type='submit') X
+                      p.form-control-static #{row[key]}
+                    //  input.form-control(type='text', value='#{row[key]}', name='key')
+                  //td 
+                  //  button.btn.btn-default(type='submit') X
