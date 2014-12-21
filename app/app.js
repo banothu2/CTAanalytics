@@ -190,7 +190,11 @@ var DBpassword = '';
       console.log(queryRequested);
       connection.query('USE ' + toDatabase);
 
-      //if(queryRequested == 'mapRoute126'){
+        var sql_for_longest_bus_route_by_number_of_stops = "SELECT MAX(number_of_stops) as stops, route_number FROM  ( SELECT count(stop_id) AS number_of_stops, first as route_number FROM  (  SELECT strSplit(routes, ',', 1) as first, stop_id FROM ridership UNION ALL  SELECT strSplit(routes, ',', 2) as second, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 3) as third, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 4) as fourth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 5) as fifth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 6) as sixth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 7) as seventh, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 8) as eight, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 9) as nineth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 10) as tenth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 11) as eleventh, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 12) as twelfth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 13) as thirteenth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 14) as fourteenth, stop_id  FROM ridership UNION ALL  SELECT strSplit(routes, ',', 15) as fifteenth, stop_id  FROM ridership ORDER BY first) AS rider_union WHERE first <> '' GROUP BY first ORDER BY number_of_stops DESC) AS testing";
+        var sql_for_most_valuable_bus_stop =  "SELECT stop_id, on_street, cross_street, MAX(number_of_routes) as number_of_routes FROM (SELECT stop_id, on_street, cross_street, (LENGTH(routes) - LENGTH(REPLACE(routes, ',', '')) + 1) AS 'number_of_routes' FROM ridership ORDER BY number_of_routes DESC) AS Testing";
+        var sql_for_most_valuable_bus_stop_with_location = "SELECT stop_id, on_street, cross_street, location, (LENGTH(routes) - LENGTH(REPLACE(routes, ',', '')) + 1) AS 'number_of_routes' FROM ridership ORDER BY number_of_routes DESC LIMIT 20";
+
+      if(queryRequested == 'mapRoute126'){
           connection.query('SELECT on_street, cross_street, location, routes FROM '+ toTable + ' WHERE routes = 126 ORDER BY stop_id', function(err, rows){
                 res.contentType('json');
                 res.send({
@@ -198,31 +202,89 @@ var DBpassword = '';
                 })
 
             })
+      } else if (queryRequested == 'LongestBusRoute'){
 
-      // } else {
-      //     connection.query('SELECT * FROM '+ toTable + ' LIMIT 5', function(err, rows){
-      //             var keys = Object_keys(rows[0]);
-      //             function Object_keys(obj) {
-      //                 var keys = [], name;
-      //                 for (name in obj) {
-      //                     if (obj.hasOwnProperty(name)) {
-      //                         keys.push(name);
-      //                     }
-      //                 }
-      //                 return keys;
-      //             }
+          connection.query(sql_for_longest_bus_route_by_number_of_stops, function(err, rows){
+                res.contentType('json');
+                res.send({
+                    data: JSON.stringify(rows)
+                })
 
-      //           res.contentType('json');
-      //           res.send({
-      //               data: JSON.stringify(rows)
-      //           })
+            })
+      } else if (queryRequested == 'MostValuableBusStop'){
 
-      //       })
-      // }
+          connection.query(sql_for_most_valuable_bus_stop, function(err, rows){
+                res.contentType('json');
+                res.send({
+                    data: JSON.stringify(rows)
+                })
+
+            })
+      } else if (queryRequested == 'MostValuableBusStopWithLocation'){
+
+          connection.query(sql_for_most_valuable_bus_stop_with_location, function(err, rows){
+                res.contentType('json');
+                res.send({
+                    data: JSON.stringify(rows)
+                })
+
+            })
+      } else {
+          connection.query('SELECT * FROM '+ toTable + ' LIMIT 5', function(err, rows){
+                  var keys = Object_keys(rows[0]);
+                  function Object_keys(obj) {
+                      var keys = [], name;
+                      for (name in obj) {
+                          if (obj.hasOwnProperty(name)) {
+                              keys.push(name);
+                          }
+                      }
+                      return keys;
+                  }
+
+                res.contentType('json');
+                res.send({
+                    data: JSON.stringify(rows)
+                })
+
+            })
+      }
     }
   }
 
+  var query = {
+    open: function(req, res){
+      var toDatabase = req.params.toDatabase;
+      var toTable = req.params.toTable;
+      var queryRequested = req.params.query;
 
+      connection.query('USE ' + toDatabase);
+
+      connection.query(queryRequested, function(err, rows){
+            res.contentType('json');
+            res.send({
+                data: JSON.stringify(rows)
+            })
+
+        })
+    }
+  }
+
+  var gmap = {
+    outlinepath: function(req, res){
+      var toDatabase = req.params.toDatabase;
+      var toTable = req.params.toTable;
+      var queryRequested = req.params.query;
+          connection.query('SELECT on_street, cross_street, location, routes FROM '+ toTable + ' WHERE routes = '+ queryRequested +' ORDER BY stop_id', function(err, rows){
+                res.contentType('json');
+                res.send({
+                    data: JSON.stringify(rows)
+                })
+
+            })
+      // }
+    }
+  }
 /*
 
 var db_config = {
@@ -290,6 +352,12 @@ handleDisconnect();
       get: init.createConnection
       //get: init.requestConnection
     }, 
+    '/query/:toDatabase/:toTable/:query':{
+      get: query.open
+    },
+    '/map/:toDatabase/:toTable/:query':{
+      get: gmap.outlinepath
+    },
     '/api/:toDatabase/:toTable/:query':{
       get: init.connected_api
     },

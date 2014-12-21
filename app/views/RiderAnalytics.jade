@@ -16,39 +16,80 @@ block content
           {'name': 'MOTOROLA XOOM™',
            'snippet': 'The Next, Next Generation tablet.'}
         ];
-        $http.get('/api/ridership/ridership/mapRoute126').success(function(data){
-          $scope.data = $.parseJSON(data.data);
+
+        //- $http.get('/map/ridership/ridership/9').success(function(data){
+        //-   $scope.data = $.parseJSON(data.data);
+        //-   var locations = [];
+
+        //-   var i = 0;
+        //-   var res;
+        //-   for(i = 0; i < $scope.data.length; i++){
+        //-     res = ($scope.data[i].location).split(",");
+        //-     locations.push([''+$scope.data[i].on_street+', ' + $scope.data[i].cross_street+'', Number(res[0].substring(1)), Number(res[1].substring(0, res[1].length-1)), i]);
+        //-   }
+
+        //-   var map = new google.maps.Map(document.getElementById('map'), {
+        //-     zoom: 12,
+        //-     center: new google.maps.LatLng(41.8763, -87.7241),
+        //-     mapTypeId: google.maps.MapTypeId.ROADMAP
+        //-   });
+
+        //-   var infowindow = new google.maps.InfoWindow();
+        //-   var marker, i;
+        //-   var circle ={
+        //-       path: google.maps.SymbolPath.CIRCLE,
+        //-       fillColor: 'red',
+        //-       fillOpacity: .4,
+        //-       scale: 4.5,
+        //-       strokeColor: 'white',
+        //-       strokeWeight: 1
+        //-   };
+
+        //-   for (i = 0; i < locations.length; i++) {  
+        //-     marker = new google.maps.Marker({
+        //-       position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+        //-       map: map,
+        //-       icon: circle
+        //-     });
+
+        //-     google.maps.event.addListener(marker, 'click', (function(marker, i) {
+        //-       return function() {
+        //-         infowindow.setContent(locations[i][0]);
+        //-         infowindow.open(map, marker);
+        //-       }
+        //-     })(marker, i));
+        //-   }
+        //-   })
+      });
+
+      riderApp.controller('SpecQueryCtrl', function ($scope, $http) {
+        $http.get('/api/ridership/ridership/LongestBusRoute').success(function(data){
+          $scope.LongestBusRoute = $.parseJSON(data.data);
+        });
+        $http.get('/api/ridership/ridership/MostValuableBusStop').success(function(data){
+          $scope.MostValuableBusStop = $.parseJSON(data.data);
+        });
+        $http.get('/api/ridership/ridership/MostValuableBusStopWithLocation').success(function(data){
+          $scope.MostValuableBusStopWithLocation = $.parseJSON(data.data);
+
           var locations = [];
 
           var i = 0;
           var res;
-          for(i = 0; i < $scope.data.length; i++){
-
-            res = ($scope.data[i].location).split(",");
-            locations.push([''+$scope.data[i].on_street+', ' + $scope.data[i].cross_street+'', Number(res[0].substring(1)), Number(res[1].substring(0, res[1].length-1)), i]);
-            //$scope.data[i]
+          for(i = 0; i < $scope.MostValuableBusStopWithLocation.length; i++){
+            res = ($scope.MostValuableBusStopWithLocation[i].location).split(",");
+            locations.push([''+$scope.MostValuableBusStopWithLocation[i].on_street+', ' + $scope.MostValuableBusStopWithLocation[i].cross_street+'', Number(res[0].substring(1)), Number(res[1].substring(0, res[1].length-1)), i]);
           }
 
-          //$scope.data = locations;
-          //- var locations = [
-          //-   ['Bondi Beach', -33.890542, 151.274856, 4],
-          //-   ['Coogee Beach', -33.923036, 151.259052, 5],
-          //-   ['Cronulla Beach', -34.028249, 151.157507, 3],
-          //-   ['Manly Beach', -33.80010128657071, 151.28747820854187, 2],
-          //-   ['Maroubra Beach', -33.950198, 151.259302, 1]
-          //- ];
-
-          var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 10,
-            center: new google.maps.LatLng(41.8763, -87.7741),
+          var map = new google.maps.Map(document.getElementById('mapStopThatAppearsMost'), {
+            zoom: 13,
+            center: new google.maps.LatLng(41.8863, -87.6241),
             mapTypeId: google.maps.MapTypeId.ROADMAP
           });
 
           var infowindow = new google.maps.InfoWindow();
-
           var marker, i;
-
-          var circle ={
+          var circle = {
               path: google.maps.SymbolPath.CIRCLE,
               fillColor: 'red',
               fillOpacity: .4,
@@ -56,6 +97,7 @@ block content
               strokeColor: 'white',
               strokeWeight: 1
           };
+
           for (i = 0; i < locations.length; i++) {  
             marker = new google.maps.Marker({
               position: new google.maps.LatLng(locations[i][1], locations[i][2]),
@@ -70,13 +112,51 @@ block content
               }
             })(marker, i));
           }
+        }); 
+        $http.get('/map/ridership/ridership/9').success(function(data){
+          $scope.data = $.parseJSON(data.data);
+          var locations = [];
 
+          var i = 0;
+          var res;
+          for(i = 0; i < $scope.data.length; i++){
+            res = ($scope.data[i].location).split(",");
+            locations.push([''+$scope.data[i].on_street+', ' + $scope.data[i].cross_street+'', Number(res[0].substring(1)), Number(res[1].substring(0, res[1].length-1)), i]);
+          }
 
+          var map = new google.maps.Map(document.getElementById('mapLongestBusRoute'), {
+            zoom: 10,
+            center: new google.maps.LatLng(41.8763, -87.6741),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          });
 
+          var infowindow = new google.maps.InfoWindow();
+          var marker, i;
+          var circle ={
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: 'blue',
+              fillOpacity: .4,
+              scale: 4.5,
+              strokeColor: 'white',
+              strokeWeight: 1
+          };
 
+          for (i = 0; i < locations.length; i++) {  
+            marker = new google.maps.Marker({
+              position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+              map: map,
+              icon: circle
+            });
+
+            google.maps.event.addListener(marker, 'click', (function(marker, i) {
+              return function() {
+                infowindow.setContent(locations[i][0]);
+                infowindow.open(map, marker);
+              }
+            })(marker, i));
+          }
           })
       });
-
       //- function UserGeos($scope, $http){
       //-   var pathArray = window.location.pathname.split('/')
       //-   $http.get('/user/' + pathArray[2] + '/' + pathArray[3] + '/JSON').success(function(data){
@@ -86,23 +166,47 @@ block content
 
 
   .container(style='padding-top: 20px', ng-app='riderApp')
-    .row
-      div.col-md-12
-        table.table.table-hover
-          thead 
-            - each key in keys
-              th #{key}
-            th 
-          tbody 
-            - each row, i in rows
-              tr
-                form(method="POST", action="/database/#{databaseName}/#{tableName}/#{row[key[0]}")
-                  - each key in keys
-                    td 
-                      p.form-control-static #{row[key]}
+    //- .row
+    //-   div.col-md-12
+    //-     table.table.table-hover
+    //-       thead 
+    //-         - each key in keys
+    //-           th #{key}
+    //-         th 
+    //-       tbody 
+    //-         - each row, i in rows
+    //-           tr
+    //-               - each key in keys
+    //-                 td 
+    //-                   p.form-control-static #{row[key]}
     .row(ng-controller='RiderCtrl')
-      //span {{data}}
-      #map(style='width: 1100px; height: 500px;')
+      //- span {{query}}
+      //-#map(style='width: 1100px; height: 250px;')
+    .row(ng-controller='SpecQueryCtrl')
+      .col-md-4 
+        h4 Longest bus route (by number of stops)
+        table.table.table-hover
+            thead
+              th Stops
+              th Route Number 
+            tbody 
+              tr 
+                td {{LongestBusRoute[0].stops}} 
+                td {{LongestBusRoute[0].route_number}} 
+        #mapLongestBusRoute(style='width: 350px; height: 250px;')
+
+      .col-md-4
+        h4 Bus stop that appears on the most routes
+        table.table.table-hover
+            thead
+              th Stops
+              th Route Number 
+            tbody 
+              tr 
+                td ({{MostValuableBusStop[0].on_street}}, {{MostValuableBusStop[0].cross_street}})
+                td {{MostValuableBusStop[0].number_of_routes}}   
+        #mapStopThatAppearsMost(style='width: 350px; height: 250px;')      
+      .col-md-4 
 
   //-     span {{data}}
   //-     ul
