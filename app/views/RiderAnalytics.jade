@@ -4,6 +4,15 @@ block content
 
   script(src='/js/angular.js')
   script(src='http://maps.google.com/maps/api/js?sensor=false', type='text/javascript')
+  script(src='/lib/d3.v3.js')
+  script(src='/js/nv.d3.js')
+  script(src='/src/tooltip.js')
+  script(src='/src/utils.js')
+  script(src='/src/models/legend.js')
+  script(src='/src/models/axis.js')
+  script(src='/src/models/distribution.js')
+  script(src='/src/models/scatter.js')
+  script(src='/src/models/scatterChart.js')
   script(type='text/javascript')
       var riderApp = angular.module('riderApp', []);
 
@@ -60,6 +69,165 @@ block content
         //-     })(marker, i));
         //-   }
         //-   })
+      });
+      
+      riderApp.controller('ScatterCtrl', function ($scope, $http) {
+        var dataholder = [];
+        $http.get('/api/ridership/ridership/scatterRoutesBoardingsAlightingsBGreater').success(function(data){
+          $scope.scatterRoutesBoardingsAlightings = $.parseJSON(data.data);
+          var i; 
+          dataholder.push({
+            key: "Boarding (>1000) vs. # of stops",
+            values: []
+            })
+          for(i = 0; i < $scope.scatterRoutesBoardingsAlightings.length; i++){
+            //- dataholder[0].values[i] = 
+            //-   {
+
+            //-   }
+
+            dataholder[0].values.push({
+                x: $scope.scatterRoutesBoardingsAlightings[i].boardings,
+                y: $scope.scatterRoutesBoardingsAlightings[i].number_of_routes,
+                size: 2,
+                shape: 'circle'
+            });
+          }
+
+
+          var chart;
+
+          nv.addGraph(function() {
+              chart = nv.models.scatterChart()
+                  .showDistX(true)
+                  .showDistY(true)
+                  .useVoronoi(true)
+                  .color(d3.scale.category10().range())
+                  .transitionDuration(300);
+              chart.xAxis.tickSize([5, 10]);
+              chart.xAxis.tickFormat(d3.format('1f'));
+              chart.yAxis.tickFormat(d3.format('1f'));
+              //- chart.tooltipContent(function(key) {
+              //-     return '<h2>' + key + '</h2>';
+              //- });
+              d3.select('#test1 svg')
+                  .datum(dataholder)
+                  .call(chart);
+              nv.utils.windowResize(chart.update);
+              chart.dispatch.on('stateChange', function(e) {
+                  ('New State:', JSON.stringify(e));
+              });
+              return chart;
+          });
+
+        });
+
+        var dataholdertwo = [];
+        $http.get('/api/ridership/ridership/scatterRoute9BoardingAndAlightings').success(function(data){
+          $scope.scatterRoutesBoardingsAlightings = $.parseJSON(data.data);
+          var i; 
+          dataholdertwo.push({
+            key: "Route 9",
+            values: []
+            })
+          for(i = 0; i < $scope.scatterRoutesBoardingsAlightings.length; i++){
+            //- dataholdertwo[0].values[i] = 
+            //-   {
+
+            //-   }
+
+            dataholdertwo[0].values.push({
+                x: $scope.scatterRoutesBoardingsAlightings[i].boardings,
+                y: $scope.scatterRoutesBoardingsAlightings[i].alightings,
+                size: $scope.scatterRoutesBoardingsAlightings[i].number_of_routes,
+                shape: 'circle'
+            });
+          }
+
+
+          var chart;
+
+          nv.addGraph(function() {
+              chart = nv.models.scatterChart()
+                  .showDistX(true)
+                  .showDistY(true)
+                  .useVoronoi(true)
+                  .color(d3.scale.category10().range())
+                  .transitionDuration(300);
+              chart.xAxis.tickSize([5, 10]);
+              chart.xAxis.tickFormat(d3.format('1f'));
+              chart.yAxis.tickFormat(d3.format('1f'));
+              //- chart.tooltipContent(function(key) {
+              //-     return '<h2>' + key + '</h2>';
+              //- });
+              d3.select('#test2 svg')
+                  .datum(dataholdertwo)
+                  .call(chart);
+              nv.utils.windowResize(chart.update);
+              chart.dispatch.on('stateChange', function(e) {
+                  ('New State:', JSON.stringify(e));
+              });
+              return chart;
+          });
+
+        });
+
+      });
+
+      riderApp.controller('HorizontalBarCtrl', function ($scope, $http){
+
+          //- var HorizontalData = 
+          //- [
+          //-   {
+          //-     "key": "Series 1",
+          //-     "color": "#d67777",
+          //-     "values": [
+          //-       { 
+          //-         "x" : 1 ,
+          //-         "y" : -1.8746444827653
+          //-       } , 
+          //-       { 
+          //-         "x" : 1 ,
+          //-         "y" : -8.0961543492239
+          //-       } , 
+          //-       { 
+          //-         "x" : 1 ,
+          //-         "y" : -0.57072943117674
+          //-       } , 
+          //-       { 
+          //-         "x" : 1 ,
+          //-         "y" : -2.4174010336624
+          //-       } , 
+          //-       {
+          //-         "x" : 1 ,
+          //-         "y" : -0.72009071426284
+          //-       } , 
+          //-       { 
+          //-         "x" : 1 ,
+          //-         "y" : -0.77154485523777
+          //-       } , 
+          //-       { 
+          //-         "x" : 1 ,
+          //-         "y" : -0.90152097798131
+          //-       } , 
+          //-       {
+          //-         "x" : 1 ,
+          //-         "y" : -0.91445417330854
+          //-       } , 
+          //-       { 
+          //-         "x" : 1 ,
+          //-         "y" : -0.055746319141851
+          //-       }
+          //-     ]
+          //-   }
+          //- ];
+          $http.get('/api/ridership/ridership/busStopsByRoute').success(function(data){
+            $scope.busStopsByRoute = $.parseJSON(data.data);
+          });
+          $http.get('/api/ridership/ridership/mostFrequentedStops').success(function(data){
+            $scope.mostFrequentedStops = $.parseJSON(data.data);
+          });
+
       });
 
       riderApp.controller('SpecQueryCtrl', function ($scope, $http) {
@@ -163,6 +331,35 @@ block content
       //-     $scope.geos = $.parseJSON(data.data);
       //-   })
       //- }
+  link(href='/src/nv.d3.css', rel='stylesheet', type='text/css')
+
+
+  style.
+    body {
+      overflow-y:scroll;
+      margin: 0;
+      padding: 0;
+      }
+      svg {
+      overflow: hidden;
+      }
+      div {
+      border: 0;
+      margin: 0;
+      }
+      #test1 {
+      margin: 0;
+      }
+      #test1 svg {
+      height: 300px;
+      }
+
+      #test2 {
+      margin: 0;
+      }
+      #test2 svg {
+      height: 350px;
+      }
 
 
   .container(style='padding-top: 20px', ng-app='riderApp')
@@ -179,38 +376,67 @@ block content
     //-               - each key in keys
     //-                 td 
     //-                   p.form-control-static #{row[key]}
-    .row(ng-controller='RiderCtrl')
+    .row(ng-controller='ScatterCtrl', style="height: 350px; padding-top:50px")
+      h4 Boarding Vs. Number of Stops 
+      #offsetDiv
+            #test1.with-3d-shadow.with-transitions
+                svg
       //- span {{query}}
       //-#map(style='width: 1100px; height: 250px;')
-    .row(ng-controller='SpecQueryCtrl')
-      .col-md-4 
-        h4 Longest bus route (by number of stops)
-        table.table.table-hover
-            thead
-              th Stops
-              th Route Number 
-            tbody 
-              tr 
-                td {{LongestBusRoute[0].stops}} 
-                td {{LongestBusRoute[0].route_number}} 
-        #mapLongestBusRoute(style='width: 350px; height: 250px;')
-
+    .row(ng-controller='SpecQueryCtrl', style="padding-top:20px")
       .col-md-4
         h4 Bus stop that appears on the most routes
         table.table.table-hover
             thead
-              th Stops
-              th Route Number 
+              th Intersection
+              th # of routes 
             tbody 
               tr 
                 td ({{MostValuableBusStop[0].on_street}}, {{MostValuableBusStop[0].cross_street}})
                 td {{MostValuableBusStop[0].number_of_routes}}   
-        #mapStopThatAppearsMost(style='width: 350px; height: 250px;')      
+        #mapStopThatAppearsMost(style='width: 350px; height: 250px;')   
       .col-md-4 
+        h4 Longest bus route (by number of stops)
+        table.table.table-hover
+            thead
+              th Route Number
+              th Stops 
+            tbody 
+              tr 
+                td {{LongestBusRoute[0].route_number}} 
+                td {{LongestBusRoute[0].stops}} 
+        #mapLongestBusRoute(style='width: 350px; height: 250px;')   
+      .col-md-4(ng-controller='ScatterCtrl', style="height: 370px; padding-top:20px")
+        h4 Boardings and Alightings For Route 9
+        #offsetDiv
+            #test2.with-3d-shadow.with-transitions
+                svg
+    .row
+      .col-md-4(ng-controller='HorizontalBarCtrl', style="height: 870px; padding-top:20px")
+        h4 Top 20 Most Frequented
+        table.table.table-hover
+            thead
+              th Intersection
+              th # of routes
+            tbody 
+                tr(ng-repeat="item in mostFrequentedStops") 
+                  td ({{item.on_street}}, {{item.cross_street | limitTo: 15}})
+                  td {{item.number_of_routes}} 
+      .col-md-4(ng-controller='HorizontalBarCtrl', style="height: 870px; padding-top:20px")
+        h4 Bus Routes with Most and Least
+        table.table.table-hover
+            thead
+              th Route Number
+              th Stops 
+            tbody 
+                tr(ng-repeat="item in busStopsByRoute") 
+                  td {{item.route_number}} 
+                  td {{item.number_of_stops}} 
 
   //-     span {{data}}
   //-     ul
   //-       li(ng-repeat='phone in test')
   //-         span {{phone.name}}
   //- script(type='text/javascript')
+
 
