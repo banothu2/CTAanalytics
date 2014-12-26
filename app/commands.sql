@@ -98,3 +98,11 @@
 	#return replace(substring(substring_index(x, delim, pos), length(substring_index(x, delim, pos - 1)) + 1), delim, '');
 
 	SELECT COUNT(routes) FROM ridership where routes = 9
+
+
+
+
+# excess
+
+SELECT * FROM (SELECT stop_id, on_street, cross_street, (LENGTH(routes) - LENGTH(REPLACE(routes, ',', '')) + 1) AS number_of_routes FROM ridership ORDER BY number_of_routes DESC) AS apple WHERE number_of_routes > 2 
+ 
