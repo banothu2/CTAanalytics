@@ -104,6 +104,5 @@
 
 # excess
 
-
 SELECT * FROM (SELECT stop_id, on_street, cross_street, (LENGTH(routes) - LENGTH(REPLACE(routes, ',', '')) + 1) AS number_of_routes FROM ridership ORDER BY number_of_routes DESC) AS apple WHERE number_of_routes > 2 
  
